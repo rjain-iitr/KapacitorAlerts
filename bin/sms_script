@@ -1,0 +1,35 @@
+#!/bin/bash
+set -x
+input_std=${1:-/dev/stdin}
+smstext='DEVTEST: '$(jq '.message' $input_std)
+if [ -z `echo $http_proxy` ]; then
+    printf "http proxy not set..\nsetting http_proxy=http://10.140.218.59:3128\n"
+    export http_proxy=http://10.140.218.59:3128
+fi
+if [ -z `echo $https_proxy` ]; then
+    printf "https proxy not set..\nsetting https_proxy=http://10.140.218.59:3128\n"
+    export https_proxy=http://10.140.218.59:3128
+fi
+
+printf "url encoding message"
+rawurlencode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+  for (( pos=0 ; pos<strlen ; pos++ ))
+  do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"    # You can either set a return variable (FASTER) 
+  REPLY="${encoded}"   #+or echo the result (EASIER)... or both... :p
+}
+
+encodedmsg=$(rawurlencode "$smstext")
+
+curl -i "https://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to=919206649235,&msg=$encodedmsg&msg_type=TEXT&userid=2000150888&auth_scheme=plain&password=ksWFuk&v=1.1&format=text"
