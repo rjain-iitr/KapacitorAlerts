@@ -1,0 +1,17 @@
+Alerts have been configured for DEVTEST(10.140.12.213) AND STAGING(10.140.215.225). Currently, I have enable SMS, SMTP and email alerts:
+1. SMS is sent by the /bin/sms_script. It is defined by the line .exec("/bin/sms_script") in alert.txt. The curl statement in that file can be edited to add more comma seperated mobile numbers.
+2. Mail is sent by kapacitor.It can be enabled and disabled in /etc/kapacitor/kapacitor.conf under SMTP. More recipients can also be added there.
+3.Slack alerts are not working because of proxy.
+
+
+For creating alerts,
+1. Set up the rules in try.csv file. Specify the measurement name, field value, warning condition and critical condition.
+2. Start kapacitor if it is not running.
+3. run usingKapacitor.py while kapacitor is running. (After starting, kapacitor may take a couple of minutes before you can define a task or run usingKapacitor.py)
+4. Everytime you need to make changes to try.csv, repeat above steps.
+
+
+usingKapacitor.py script creates tick files (whose format is specified in alert.txt file) for each row in the csv file and saves them as file_#.tick (where # is the row number in csv file). It also defines tasks (a task is responsible for creating the alerts based on the specifications in the tick file) with names alert_# corresponding to each file_#.tick. Then all the tasks are enabled.
+
+
+

@@ -1,0 +1,17 @@
+stream
+    // Select just the cpu measurement from our example database.
+    |from()
+        .measurement('$measurement')
+    |alert()
+        .id('{{.Name}}')
+        .message('{{ index .Tags "service" }} -- {{.ID}} is {{.Level}}: {{index .Fields "$fieldkey"}}')
+        .warn(lambda: "$fieldkey"$warning)
+        .crit(lambda: "$fieldkey"$critical)
+	.details('''
+<h1>{{ .ID }} :: {{ .Time }} </h1>
+<b>{{ .Message }}</b> at host: {{ index .Tags "host" }}
+''')
+        // Whenever we get an alert write it to a file.
+        .log('/tmp/$fieldkey.log')
+        .stateChangesOnly()
+//	.exec('/bin/sms_script')
